@@ -40,7 +40,7 @@ export default abstract class BaseExui extends BaseApi {
     confirmActions: () => Promise<void>,
     ccdEvent: CCDEvent,
     user: User,
-    { retries = config.exui.eventRetries, verifySuccessEvent = true, camundaProcess = true } = {},
+    {retries = config.exui.eventRetries, verifySuccessEvent = true, camundaProcess = true} = {},
   ) {
     await super.setupBankHolidays();
     while (retries >= 0) {
@@ -62,12 +62,35 @@ export default abstract class BaseExui extends BaseApi {
     await confirmActions();
     if (ccdEvent === ccdEvents.CREATE_CLAIM || ccdEvent === ccdEvents.CREATE_CLAIM_SPEC) {
       const caseId = await this.exuiDashboardActions.grabCaseNumber();
-      super.setCCDCaseData = { id: caseId };
+      super.setCCDCaseData = {id: caseId};
       UserAssignedCasesHelper.addAssignedCaseToUser(user, this.ccdCaseData.id);
     }
     if (verifySuccessEvent) await this.exuiDashboardActions.verifySuccessEvent(ccdEvent);
     await this.exuiDashboardActions.clearCCDEvent();
     if (camundaProcess) await this.waitForFinishedBusinessProcess(user, this.ccdCaseData.id);
     await this.fetchAndSetCCDCaseData(this.ccdCaseData.id);
+  }
+
+  @Step(classKey)
+  async retryWorkAllocationsTasks(
+    eventActions: () => Promise<void>,
+    confirmActions: () => Promise<void>,
+    ccdEvent: CCDEvent,
+    user: User,
+    {workAllocationRetries = config.wa.eventRetries, verifySuccessEvent = true, camundaProcess = true} = {},
+  ) {
+    while (workAllocationRetries >= 0) {
+
+      await confirmActions();
+      if (ccdEvent === ccdEvents.CREATE_CLAIM || ccdEvent === ccdEvents.CREATE_CLAIM_SPEC) {
+        const caseId = await this.exuiDashboardActions.grabCaseNumber();
+        super.setCCDCaseData = {id: caseId};
+        UserAssignedCasesHelper.addAssignedCaseToUser(user, this.ccdCaseData.id);
+      }
+      if (verifySuccessEvent) await this.exuiDashboardActions.verifySuccessEvent(ccdEvent);
+      await this.exuiDashboardActions.clearCCDEvent();
+      if (camundaProcess) await this.waitForFinishedBusinessProcess(user, this.ccdCaseData.id);
+      await this.fetchAndSetCCDCaseData(this.ccdCaseData.id);
+    }
   }
 }

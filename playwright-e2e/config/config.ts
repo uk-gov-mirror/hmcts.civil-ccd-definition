@@ -35,6 +35,10 @@ const config = {
     eventRetries: parseInt(process.env.PLAYWRIGHT_EXUI_RETRIES),
     pageSubmitTimeout: 20_000,
   },
+  wa: {
+    eventRetries: parseInt(process.env.PLAYWRIGHT_WA_RETRIES),
+    pageSubmitTimeout: 20_000,
+  },
 };
 
 export default config;
